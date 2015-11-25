@@ -1,4 +1,5 @@
-require "docking_station.rb"
+require "~/projects/boris_bikes/lib/docking_station.rb"
+DEFAULT_CAPACITY = DockingStation::DEFAULT_CAPACITY
 
 describe DockingStation do
     it { is_expected.to respond_to :release_bike }
@@ -15,14 +16,12 @@ describe DockingStation do
     end
 
     it 'docks something' do
-      bike = Bike.new
-      expect(subject.dock(bike)).to eq bike
+      bike1 = Bike.new
+      expect(subject.dock(bike1)).to eq subject.bikes
     end
 
-    it 'returns docked bikes' do
-      bike = Bike.new
-      subject.dock(bike)
-      expect(subject.bikes).to eq bike
+    it 'return list of docked bikes' do
+      expect(subject.bikes).to eq subject.bikes
     end
 
     it 'raise error when one tries to release bikes when there are none' do
@@ -35,9 +34,30 @@ describe DockingStation do
     #   expect{subject.dock(bike)}.to raise_error("No space mate- dock is full")
     # end
 
-    it "Default capacity of docking station = 20" do
-      20.times {subject.dock Bike.new}
-      expect{subject.dock(Bike.new)}.to raise_error("Max is 20")
+    it "restricts docking at max capacity" do
+      DEFAULT_CAPACITY.times {subject.dock Bike.new}
+      expect{subject.dock(Bike.new)}.to raise_error("Max is #{subject.capacity}, you currently have #{subject.bikes.length} bikes")
+    end
+
+    it "has a default max capacity of 20" do
+      expect(subject.capacity).to eq 20
+    end
+
+    it "can bike be broken" do
+      bike1 = Bike.new
+      expect(bike1.working?(false)).to eq bike1.works
+    end
+
+    it "bikes can be reported as broken" do
+      bike1 = Bike.new
+      expect(subject.report(bike1)).to eq false
+    end
+
+    it "will not release bike if broken" do
+      bike1 = Bike.new
+      subject.report(bike1)
+      subject.dock(bike1)
+      expect{subject.release_bike}.to raise_error "Sorry, this bike is broken"
     end
 
 end

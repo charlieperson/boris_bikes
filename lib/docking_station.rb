@@ -1,21 +1,40 @@
 require_relative 'bike'
 
 class DockingStation
-  def initialize
-    @count = 0
-    @max_capacity = 20
+  attr_reader :bikes, :capacity
+  DEFAULT_CAPACITY = 20
+
+  def initialize(capacity = DEFAULT_CAPACITY)
+    @capacity = capacity
+    @bikes = []
   end
 
-  attr_reader :bikes
-
   def release_bike
-    raise "No bikes bucko" unless @count > 0        # <= guard clause
-    Bike.new
+    empty?
+    if @bikes.last.works      # .LAST IS NOT IDEAL
+      @bikes.pop
+    else
+      raise "Sorry, this bike is broken"
+    end
   end
 
   def dock(bike)
-    raise "Max is 20" if @count >= @max_capacity
-    @count +=1
-    @bikes = bike
+    full?
+    @bikes << bike
+  end
+
+  def report(bike)
+    bike.works = false
+    bike.works
+  end
+
+    private
+
+  def full?
+    raise "Max is #{@capacity}, you currently have #{@bikes.length} bikes" if @bikes.length >= @capacity
+  end
+
+  def empty?
+    raise "No bikes bucko" unless @bikes.length > 0
   end
 end
